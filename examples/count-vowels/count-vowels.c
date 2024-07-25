@@ -5,24 +5,24 @@
 #include <stdio.h>
 #include <string.h>
 
-int32_t EXTISM_EXPORTED_FUNCTION(count_vowels) {
+void EXTISM_EXPORTED_FUNCTION(count_vowels) {
   uint64_t count = 0;
   uint8_t ch = 0;
-  uint64_t length = extism_input_length();
+  char buf[1024];
+  int64_t nRead = 0;
 
-  for (uint64_t i = 0; i < length; i++) {
-    ch = extism_input_load_u8(i);
-    count += (ch == 'A') + (ch == 'a') + (ch == 'E') + (ch == 'e') +
-             (ch == 'I') + (ch == 'i') + (ch == 'O') + (ch == 'o') +
-             (ch == 'U') + (ch == 'u');
+  while ((nRead = extism_read(ExtismStreamInput, extism_handle(buf, 1024))) >
+         0) {
+    for (int64_t i = 0; i < nRead; i++) {
+      ch = buf[i];
+      count += (ch == 'A') + (ch == 'a') + (ch == 'E') + (ch == 'e') +
+               (ch == 'I') + (ch == 'i') + (ch == 'O') + (ch == 'o') +
+               (ch == 'U') + (ch == 'u');
+    }
   }
 
   char out[128];
   int n = snprintf(out, 128, "{\"count\": %llu}", count);
 
-  ExtismHandle buf = extism_alloc(n);
-  extism_store(buf, out, n);
-  extism_output_set(buf, n);
-
-  return 0;
+  extism_write(ExtismStreamOutput, extism_handle(out, n));
 }
